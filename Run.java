@@ -1,6 +1,7 @@
 package mario;
 
 import java.applet.Applet;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -20,12 +21,9 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 
 	@SuppressWarnings("unused")
 	private boolean collision = false, pressed_left = false,
-			pressed_right = false, pressed_up = false, pressed_down = false,
-			moving_up = false, moving_down = false, falling = true,
-			onPlatform = false;
+			pressed_right = false, pressed_up = false, pressed_down = false, pressed_space = false;
 	private Timer gameTimer;
-	private static final int MAX_JUMP_RATE = 30;
-	private static int jumpRate = MAX_JUMP_RATE;
+
 	
 
 	// create objects from classes of entities and characters
@@ -63,7 +61,7 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 		// set background Color
 		setBackground(Color.CYAN);
 		
-		// create things in game
+		// create object in game
 		create();
 		
 		// timer which sets interval to update screen
@@ -79,11 +77,6 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 
 	// USER INPUT
 	@Override
-	public void keyTyped(KeyEvent e) {
-
-	}
-
-	@Override
 	public void keyPressed(KeyEvent e) {
 		int key = e.getKeyCode();
 
@@ -91,13 +84,15 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 			pressed_left = true;
 		if (key == KeyEvent.VK_RIGHT)
 			pressed_right = true;
-		if (key == KeyEvent.VK_UP)
+		if (key == KeyEvent.VK_UP) {
 			vars.mario.y = 10;
-		pressed_up = true;
-		if (e.getKeyChar() == KeyEvent.VK_SPACE) {
-			moving_up = true;
-			falling = false;
+			pressed_up = true;
 		}
+			
+		if (e.getKeyChar() == KeyEvent.VK_SPACE) {
+			pressed_space = true;
+		}
+		
 		if (key == KeyEvent.VK_DOWN)
 			pressed_down = true;
 	}
@@ -114,6 +109,8 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 			pressed_up = false;
 		if (key == KeyEvent.VK_DOWN)
 			pressed_down = false;
+		if (key == KeyEvent.VK_SPACE)
+			pressed_space = false;
 	}
 
 	// PERFORM EVERY TIMER INTERVAL
@@ -123,7 +120,7 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 		
 		if(!vars.gameOver) {
 			// apply gravity`
-			if (falling)
+			if (vars.mario.falling)
 				vars.mario.y += 3;
 	
 			// set coinClip
@@ -177,6 +174,15 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 			} else
 				// if not going right, stand still
 				vars.mario.clipX = 1;
+			
+			if(pressed_space) {
+				//only allow jumping while on platform
+				if(vars.mario.onPlatform) {
+					vars.mario.movingUp = true;
+					vars.mario.movingDown = false;
+					vars.mario.falling = false;
+				}
+			}
 	
 			// move characters down due to gravity
 			for (int i = 0; i < vars.mushrooms.size(); i++) {
@@ -200,30 +206,32 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 					vars.coins.get(i).x--;
 			}
 	
-			// jumping
-			if (moving_up) {
+			// MARIO JUMPING SEQUENCE
+			if (vars.mario.movingUp) {
 				
-				// move mario
+				// move mario and change clip
 				// update collision box
-				vars.mario.y -= jumpRate;
-				jumpRate -= 2;
+				vars.mario.y -= vars.mario.getJumpRate();
+				vars.mario.setJumpRate(vars.mario.getJumpRate() - 2);
 				vars.mario.clipX = 14;
-				if (jumpRate == 0) {
-					moving_up = false;
-					moving_down = true;
+				if (vars.mario.getJumpRate() == 0) {
+					vars.mario.movingUp = false;
+					vars.mario.movingDown = true;
 				}
 			}
 			
-			if (moving_down) {
+			if (vars.mario.movingDown) {
 				
 				// move mario
-				vars.mario.y += jumpRate;
+				vars.mario.y += vars.mario.getJumpRate() ;
 				vars.mario.clipX = 8;
+				//set mario clip
 	
-				jumpRate += 2;
-				if (jumpRate > MAX_JUMP_RATE) {
-					moving_down = false;
-					jumpRate = MAX_JUMP_RATE;
+				vars.mario.setJumpRate(vars.mario.getJumpRate() + 2);
+				
+				if (vars.mario.getJumpRate() > vars.mario.MAX_JUMP_RATE) {
+
+					vars.mario.setJumpRate(vars.mario.MAX_JUMP_RATE);
 					vars.mario.movingDown = false;
 				}
 			}
@@ -258,23 +266,22 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 					vars.l.tileMap.get(i).getImage().getWidth(this),
 					vars.l.tileMap.get(i).getImage().getHeight(this));
 
-			//allow for jumping if on cloud
+			//ALLOW MARIO TO JUMP IF ON PLATFORM
 			if (vars.l.tileMap.get(i).collisionR
 					.intersects(vars.mario.collisionR)) {
 				
-				//if marion is on top of platform
-				if (vars.mario.y + 40 < vars.l.tileMap.get(i).y) {
-					falling = false;
-					moving_down = false;
-					jumpRate = MAX_JUMP_RATE;
-					onPlatform = true;
+				//if mario is on top of platform
+				if (vars.mario.y + vars.mario.marioClip.getHeight(this) - vars.l.tileMap.get(i).getImage().getWidth(this) < vars.l.tileMap.get(i).y) {
+					vars.mario.falling = false;
+					vars.mario.movingDown = false;
+					vars.mario.setJumpRate(vars.mario.MAX_JUMP_RATE);
+					vars.mario.onPlatform = true;
 					break;
 				}
 			} else {
-				falling = true;
-				onPlatform = false;
+				vars.mario.falling = true;
+				vars.mario.onPlatform = false;
 			}
-
 		}
 
 		// check collision with coins and mario, if they collide delete coin,
@@ -311,6 +318,7 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 	// graphics methods, double buffers by painting everything onto image then
 	// drawing it to screen
 	public void paint(Graphics g) {
+		
 		// set size of window
 		setSize(vars.screen_width, vars.screen_height);
 		// draw background
@@ -351,6 +359,7 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 	@SuppressWarnings("deprecation")
 	public void update(Graphics g) {
 		Image offScreenBuffer = null;
+		
 		// create buffer for double buffering if not created
 		Graphics gr;
 		if (offScreenBuffer == null
@@ -359,9 +368,16 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 			offScreenBuffer = this.createImage(vars.screen_width,
 					vars.screen_height);
 		}
+		
 		gr = offScreenBuffer.getGraphics();
 		paint(gr);
 		// draw buffer to screen
 		g.drawImage(offScreenBuffer, 0, 0, this);
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }
