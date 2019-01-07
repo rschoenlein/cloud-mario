@@ -32,7 +32,7 @@ public interface Global_Variables {
 		public static Mario mario;
 
 		//map
-		static Level_Generator l;
+		public static Level_Generator level;
 		
 		// floor of map
 		public static int floor = screen_height / 2;

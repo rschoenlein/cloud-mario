@@ -21,12 +21,18 @@ public class Mario implements Global_Variables, ImageObserver {
 	public int clipY = 1;
 	
 	// position of mario
-	public int x = vars.screen_width / 2 - 8;
+	public static int x = vars.screen_width / 2 - 8;
 	public int y = vars.screen_height / 2 - 16;
 	
 	public boolean collision;
 	public boolean movingDown;
+	public boolean movingUp;
 	public boolean canMoveForward;
+	public boolean falling;
+	public boolean onPlatform;
+	
+	public final int MAX_JUMP_RATE = 30;
+	private int jumpRate;
 
 	public void speak() {
 		System.out.println("hello!");
@@ -36,12 +42,19 @@ public class Mario implements Global_Variables, ImageObserver {
 		
 		coins = 0;
 		
+		jumpRate = MAX_JUMP_RATE;
+		
 		// not running into anything to start
 		canMoveForward = true;
 
 		collision = false;
 
 		movingDown = false;
+		
+		movingUp = false;
+		
+		falling = true;
+		
 		
 		// load mario sprite image
 		Buffered_Image_Loader loader = new Buffered_Image_Loader();
@@ -57,5 +70,13 @@ public class Mario implements Global_Variables, ImageObserver {
 	public boolean imageUpdate(Image arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	public int getJumpRate() {
+		return jumpRate;
+	}
+
+	public void setJumpRate(int j) {
+		jumpRate = j;
 	}
 }

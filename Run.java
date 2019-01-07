@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.util.Random;
 
 import javax.swing.Timer;
 
@@ -24,33 +23,6 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 			pressed_right = false, pressed_up = false, pressed_down = false, pressed_space = false;
 	private Timer gameTimer;
 
-	
-
-	// create objects from classes of entities and characters
-	public void create() throws IOException {
-		vars.mario = new Mario();
-		vars.mario.speak();
-
-		// map
-		vars.l = new Level_Generator();
-		
-		// create mushrooms on platforms every 10 tiles
-		vars.mushrooms.add(new Mushroom(10000, 10000));
-		Random rand = new Random();
-		for (int i = 0; i < vars.l.tileMap.size(); i += 10) {
-			int x = vars.l.tileMap.get(i).x + rand.nextInt(100);
-			int y = vars.l.tileMap.get(i).y - vars.mushrooms.get(0).image.getHeight(this);
-			vars.mushrooms.add(new Mushroom(x, y));
-		}
-
-		// create coins
-		vars.coins.add(new Coin(0, 0));
-		for (int i = 0; i < vars.l.tileMap.size(); i += 10) {
-			int x = vars.l.tileMap.get(i).x;
-			int y = vars.l.tileMap.get(i).y - vars.mushrooms.get(0).image.getHeight(this);
-			vars.coins.add(new Coin(x, y));
-		}
-	}
 
 	public static void main(String[] args) throws IOException {
 		new Run();
@@ -61,8 +33,8 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 		// set background Color
 		setBackground(Color.CYAN);
 		
-		// create object in game
-		create();
+		// create characters and tileMap 
+		vars.level = new Level_Generator();
 		
 		// timer which sets interval to update screen
 		gameTimer = new Timer(25, this);
@@ -116,10 +88,9 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 	// PERFORM EVERY TIMER INTERVAL
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
-		
+	
 		if(!vars.gameOver) {
-			// apply gravity`
+			// apply gravity
 			if (vars.mario.falling)
 				vars.mario.y += 3;
 	
@@ -145,8 +116,8 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 				// clips in code below even if canMoveForward is false)
 				if (vars.mario.canMoveForward == true) {
 					// scroll objects around mario
-					for (int i = 0; i < vars.l.tileMap.size(); i++)
-						vars.l.tileMap.get(i).scroll();
+					for (int i = 0; i < vars.level.platforms.size(); i++)
+						vars.level.platforms.get(i).scroll();
 					for (int i = 0; i < vars.mushrooms.size(); i++)
 						vars.mushrooms.get(i).scroll();
 					for (int i = 0; i < vars.coins.size(); i++)
@@ -184,7 +155,8 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 				}
 			}
 	
-			// move characters down due to gravity
+			
+			// move objects down due to gravity
 			for (int i = 0; i < vars.mushrooms.size(); i++) {
 				if (vars.mushrooms.get(i).getY() < vars.floor)
 					vars.mushrooms.get(i).y++;
@@ -248,7 +220,7 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 			if(vars.mario.y > 445 )
 				vars.gameOver = true;
 		}
-
+	
 		checkCollisions();
 		repaint();
 	}
@@ -257,28 +229,32 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 	public void checkCollisions() {
 		
 		// check collision with platforms
-		for (int i = 0; i < vars.l.tileMap.size(); i++) {
+		for (int i = 0; i < vars.level.platforms.size(); i++) {
 			vars.mario.collisionR = new Rectangle(vars.mario.x, vars.mario.y,
 					vars.mario.marioClip.getWidth(this),
 					vars.mario.marioClip.getHeight(this));
-			vars.l.tileMap.get(i).collisionR = new Rectangle(
-					vars.l.tileMap.get(i).x, vars.l.tileMap.get(i).y,
-					vars.l.tileMap.get(i).getImage().getWidth(this),
-					vars.l.tileMap.get(i).getImage().getHeight(this));
+			vars.level.platforms.get(i).collisionR = new Rectangle(
+					vars.level.platforms.get(i).x, vars.level.platforms.get(i).y,
+					vars.level.platforms.get(i).getWidth(),
+					vars.level.platforms.get(i).getImage().getHeight(this));
+		
+			
+			boolean collision = vars.level.platforms.get(i).collisionR
+					.intersects(vars.mario.collisionR);
 
 			//ALLOW MARIO TO JUMP IF ON PLATFORM
-			if (vars.l.tileMap.get(i).collisionR
-					.intersects(vars.mario.collisionR)) {
-				
+			if (collision) {
 				//if mario is on top of platform
-				if (vars.mario.y + vars.mario.marioClip.getHeight(this) - vars.l.tileMap.get(i).getImage().getWidth(this) < vars.l.tileMap.get(i).y) {
+				if (vars.mario.y <  vars.level.platforms.get(i).y) {
 					vars.mario.falling = false;
 					vars.mario.movingDown = false;
 					vars.mario.setJumpRate(vars.mario.MAX_JUMP_RATE);
 					vars.mario.onPlatform = true;
+					
 					break;
 				}
 			} else {
+				
 				vars.mario.falling = true;
 				vars.mario.onPlatform = false;
 			}
@@ -344,9 +320,10 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 		g.drawString(Integer.toString(vars.mario.coins), 45, 15);
 
 		// paint level background
-		for (int i = 0; i < vars.l.tileMap.size(); i++) {
-			g.drawImage(vars.l.tileMap.get(i).getImage(),
-					vars.l.tileMap.get(i).x, vars.l.tileMap.get(i).y, this);
+		for (int i = 0; i < vars.level.platforms.size(); i++) {
+			for(int j = 0; j < vars.level.platforms.get(i).tiles.size(); j++)
+				g.drawImage(vars.level.platforms.get(i).tiles.get(j).getImage(),
+					vars.level.platforms.get(i).tiles.get(j).x, vars.level.platforms.get(i).y, this);
 		}
 		
 		//game over message
@@ -355,7 +332,7 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 		}
 	}
 
-	// for double buffering
+	//double buffering
 	@SuppressWarnings("deprecation")
 	public void update(Graphics g) {
 		Image offScreenBuffer = null;
@@ -378,6 +355,5 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 	@Override
 	public void keyTyped(KeyEvent e) {
 		// TODO Auto-generated method stub
-		
 	}
 }
