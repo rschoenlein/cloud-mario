@@ -155,18 +155,6 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 				}
 			}
 	
-			
-//			// move objects down due to gravity
-//			for (int i = 0; i < vars.mushrooms.size(); i++) {
-//				if (vars.mushrooms.get(i).getY() < vars.floor)
-//					vars.mushrooms.get(i).y++;
-//			}
-//	
-//			for (int i = 0; i < vars.coins.size(); i++) {
-//				if (vars.coins.get(i).getY() < vars.floor)
-//					vars.coins.get(i).y++;
-//			}
-	
 			// move characters left if in view
 			for (int i = 0; i < vars.mushrooms.size(); i++) {
 				if (vars.mushrooms.get(i).collision = false)
@@ -220,7 +208,6 @@ public class Run extends Applet implements Global_Variables, ActionListener,
 			if(vars.mario.y > vars.screen_height )
 				vars.gameOver = true;
 		}
-	
 		
 		checkCollisions();
 		repaint();

@@ -62,14 +62,21 @@ public class Level_Generator implements ImageObserver {
 			// generate platforms randomly certain distances apart within screen boundaries
 
 			if (x == 0) {
-				
+
+				if(platforms.get(k - 1).y < vars.screen_height - 120)
 					baseY = platforms.get(k - 1).y + r.nextInt(75) + 45;
+				else
+					baseY = vars.screen_height/3 * 2;
+			
 				baseX = platforms.get(k - 1).x + r.nextInt(170) + platforms.get(k - 1).getWidth();
 			}
 
 			else {
-				
-				baseY = platforms.get(k - 1).y - r.nextInt(150) + 45;
+
+				if(platforms.get(k - 1).y > 195)
+					baseY = platforms.get(k - 1).y - r.nextInt(150) + 45;
+				else
+					baseY = vars.screen_height/3;
 				baseX = platforms.get(k - 1).x + +r.nextInt(170) + platforms.get(k - 1).getWidth();
 			}
 
@@ -83,7 +90,8 @@ public class Level_Generator implements ImageObserver {
 		// create mario
 		vars.mario = new Mario();
 
-		// create mushrooms on a random tile on the platform for 1 out of every 10 platforms
+		// create mushrooms on a random tile on the platform for 1 out of every 10
+		// platforms
 		vars.mushrooms.add(new Mushroom(10000, 10000));
 		Random rand = new Random();
 		for (int i = 0; i < platforms.size(); i += 10) {
@@ -93,8 +101,8 @@ public class Level_Generator implements ImageObserver {
 		}
 
 		// create coins
-		vars.coins.add(new Coin(0, 0));
-		for (int i = 0; i < platforms.size(); i += 10) {
+		vars.coins.add(new Coin(100000, 100000));
+		for (int i = 0; i < platforms.size(); i += rand.nextInt(10)) {
 			int x = platforms.get(i).x + rand.nextInt(platforms.get(i).getWidth());
 			int y = platforms.get(i).y - vars.mushrooms.get(0).image.getHeight(this);
 			vars.coins.add(new Coin(x, y));

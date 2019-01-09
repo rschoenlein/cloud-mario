@@ -9,8 +9,8 @@ import javax.swing.ImageIcon;
 public interface Global_Variables {
 	public class vars {
 
-		public static int screen_width = 750;
-		public static int screen_height = 450;
+		public static int screen_width = 1000;
+		public static int screen_height = 650;
 
 		// for loading images
 		Buffered_Image_Loader loader = new Buffered_Image_Loader();

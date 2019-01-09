@@ -2,12 +2,13 @@ package mario;
 
 import java.awt.Image;
 
+import mario.Global_Variables.vars;
+
 public class Scrolling_Background
 {
 	Image image;
 	int x;
 	int y;
-	public float vY;
 	
 	public Scrolling_Background(Image img)
 	{
@@ -33,6 +34,13 @@ public class Scrolling_Background
 	
 	public void scroll()
 	{
-		x-=6;
+		// scroll objects around mario
+		for (int i = 0; i < vars.level.platforms.size(); i++)
+			vars.level.platforms.get(i).x-=3;
+		for (int i = 0; i < vars.mushrooms.size(); i++)
+			vars.mushrooms.get(i).x -= 3;
+		for (int i = 0; i < vars.coins.size(); i++)
+			vars.coins.get(i).x -= 3;
+		x-=3;
 	}
 }
