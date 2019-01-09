@@ -21,8 +21,8 @@ public class Mario implements Global_Variables, ImageObserver {
 	public int clipY = 1;
 	
 	// position of mario
-	public static int x = vars.screen_width / 2 - 8;
-	public int y = vars.screen_height / 2 - 16;
+	public static int x = vars.screen_width / 2;
+	public int y = 0;
 	
 	public boolean collision;
 	public boolean movingDown;

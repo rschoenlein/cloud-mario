@@ -43,60 +43,38 @@ public class Level_Generator implements ImageObserver {
 		map_width = 14000;
 		map_height = 400;
 
-		for (int k = 0; k < 100; k++) {
-			platforms.add(new Platform(r.nextInt(map_width), r.nextInt(map_height), platformTile, 6));
-		}
-
 		// initial platform for mario to land on
-		platforms.get(0).x = Mario.x;
-		platforms.get(0).y = map_height/2 + 20;
+		platforms.add(new Platform(Mario.x, map_height / 2, platformTile, 6));
 
-//		// create strings of tiles to make platforms
-//		int platformLength = 6;
-//		int maxPlatformLength = 6;
-//		for (int k = 1; k < tileMap.size() + maxPlatformLength; k+= platformLength) {
-//
-//			//-----------------------------------------------------------------------------------------------------
-//			// assign platform bases at random distance between 5 and marios max jump length from the previous tile
-//			//-----------------------------------------------------------------------------------------------------
-//			
-//			int dist = 0;
-//			int baseX = r.nextInt(100) + 5;
-//			int baseY = r.nextInt(75) + 5;
-//			while(dist > 200 || dist < 5 ) {
-//				
-//				
-//				if(r.nextInt(2) == 0)
-//				{
-//					baseY = tileMap.get(k - 1).y + r.nextInt(75) + 5;
-//					baseX = tileMap.get(k - 1).x + r.nextInt(150) + 5;
-//				}
-//				
-//				else
-//				{
-//					baseY = tileMap.get(k - 1).y - r.nextInt(75) + 5;
-//					baseX = tileMap.get(k - 1).x + r.nextInt(150) + 5;
-//				}
-//				
-//				
-//				dist = getDistanceBetweenPoints(baseX, baseY, tileMap.get(k - 1).x, tileMap.get(k - 1).y);
-//			}
-//			
-//			tileMap.get(k).y = baseY;
-//			tileMap.get(k).x = baseX;
-//			platformLength = r.nextInt(4) + 2;
-//			
-//		
-//			
-//			// create platform by adding tiles in same y plane to tile located at baseY, baseX
-//			for (int j = k + 1; j < k + platformLength; j++) {
-//				System.out.println("k" + k);
-//				System.out.println("j" + j);
-//				System.out.println("platformLength" + platformLength);
-//				tileMap.get(j).y = baseY;
-//				tileMap.get(j).x = tileMap.get(j - 1).x + tileMap.get(j).getImage().getWidth(this);
-//			}
-//		}
+		// create strings of tiles to make platforms
+		int maxPlatformLength = 4;
+		for (int k = 1; k < 300; k++) {
+
+			// -----------------------------------------------------------------------------------------------------
+			// assign platform bases at random distance between 5 and marios max jump length
+			// from the previous tile
+			// -----------------------------------------------------------------------------------------------------
+
+			int baseX = 0;
+			int baseY = -1;
+			int x = r.nextInt(2);
+
+			// generate platforms randomly certain distances apart within screen boundaries
+
+			if (x == 0) {
+				
+					baseY = platforms.get(k - 1).y + r.nextInt(75) + 45;
+				baseX = platforms.get(k - 1).x + r.nextInt(170) + platforms.get(k - 1).getWidth();
+			}
+
+			else {
+				
+				baseY = platforms.get(k - 1).y - r.nextInt(150) + 45;
+				baseX = platforms.get(k - 1).x + +r.nextInt(170) + platforms.get(k - 1).getWidth();
+			}
+
+			platforms.add(new Platform(baseX, baseY, platformTile, maxPlatformLength));
+		}
 	}
 
 	// create objects from classes of entities and characters
@@ -104,13 +82,12 @@ public class Level_Generator implements ImageObserver {
 
 		// create mario
 		vars.mario = new Mario();
-		vars.mario.speak();
 
-		// create mushrooms on platforms every 10 tiles
+		// create mushrooms on a random tile on the platform for 1 out of every 10 platforms
 		vars.mushrooms.add(new Mushroom(10000, 10000));
 		Random rand = new Random();
 		for (int i = 0; i < platforms.size(); i += 10) {
-			int x = platforms.get(i).x + rand.nextInt(100);
+			int x = platforms.get(i).x + rand.nextInt(platforms.get(i).getWidth());
 			int y = platforms.get(i).y - vars.mushrooms.get(0).image.getHeight(this);
 			vars.mushrooms.add(new Mushroom(x, y));
 		}
@@ -118,14 +95,10 @@ public class Level_Generator implements ImageObserver {
 		// create coins
 		vars.coins.add(new Coin(0, 0));
 		for (int i = 0; i < platforms.size(); i += 10) {
-			int x = platforms.get(i).x;
+			int x = platforms.get(i).x + rand.nextInt(platforms.get(i).getWidth());
 			int y = platforms.get(i).y - vars.mushrooms.get(0).image.getHeight(this);
 			vars.coins.add(new Coin(x, y));
 		}
-	}
-
-	public int getDistanceBetweenPoints(int x1, int y1, int x2, int y2) {
-		return (int) Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1));
 	}
 
 	@Override
